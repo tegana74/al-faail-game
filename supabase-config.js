@@ -1,4 +1,4 @@
-window.SUPABASE_URL = 'https://errntyqxfdvgeonntl.supabase.co';
+window.SUPABASE_URL = 'https://errntyqxfqfdvgeonntl.supabase.co';
 
 window.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_N8C5GLcNWuEf5rYbxhFUvQ_eHXo6jvH';
 
