@@ -1,0 +1,27 @@
+{
+  "name": "لعبة الفاعل وأعماله",
+  "short_name": "الفاعل",
+  "description": "لعبة تعليمية تفاعلية عن الفاعل وأعماله لطلاب الصف الثالث الثانوي - تصميم الأستاذ حسين سيد",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#6d28d9",
+  "theme_color": "#6d28d9",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

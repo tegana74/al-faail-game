@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#6d28d9" />
+  <title>لعبة الفاعل وأعماله | تصميم الأستاذ حسين سيد</title>
+  <meta name="description" content="لعبة تعليمية تفاعلية عن الفاعل وأعماله لطلاب الصف الثالث الثانوي - تصميم الأستاذ حسين سيد 01116544383" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="assets/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="theme-light">
+  <!-- Animated background -->
+  <div class="bg-decor">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="stars"></div>
+  </div>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <div class="brand">
+      <div class="brand-icon">ف</div>
+      <div class="brand-text">
+        <h1>الفاعل وأعماله</h1>
+        <small>الصف الثالث الثانوي</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button id="themeToggle" class="icon-btn" title="تبديل الوضع" aria-label="تبديل الوضع">
+        <span class="theme-icon">🌙</span>
+      </button>
+      <button id="installBtn" class="icon-btn hidden" title="تثبيت اللعبة على الجهاز" aria-label="تثبيت اللعبة">
+        <span>📲</span>
+      </button>
+      <button id="adminBtn" class="icon-btn" title="لوحة المدير">🛡️</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <!-- Splash / Welcome -->
+    <section id="view-splash" class="view active">
+      <div class="splash-card">
+        <div class="splash-photo-wrap">
+          <img src="assets/teacher.jpg" alt="الأستاذ حسين سيد" class="teacher-photo" />
+          <div class="photo-ring"></div>
+        </div>
+        <h2 class="splash-title">مرحبًا بكم في لعبة</h2>
+        <h1 class="splash-game">الفاعل <span class="gradient-text">وأعماله</span></h1>
+        <p class="splash-sub">اختبار تفاعلي ممتع لطلاب الصف الثالث الثانوي بالمناهج المصرية</p>
+
+        <div class="features-grid">
+          <div class="feature">
+            <span class="f-icon">🎯</span>
+            <strong>5 مراحل</strong>
+            <small>10 أسئلة لكل مرحلة</small>
+          </div>
+          <div class="feature">
+            <span class="f-icon">📈</span>
+            <strong>مستوى متدرج</strong>
+            <small>سهل → متوسط → صعب</small>
+          </div>
+          <div class="feature">
+            <span class="f-icon">🏆</span>
+            <strong>نتيجة فورية</strong>
+            <small>مع مراجعة الإجابات</small>
+          </div>
+          <div class="feature">
+            <span class="f-icon">🌙</span>
+            <strong>ليلي / نهاري</strong>
+            <small>تصميم عصري للطالب</small>
+          </div>
+        </div>
+
+        <div class="splash-actions">
+          <button class="btn btn-primary big" id="goRegister">🚀 إنشاء حساب جديد</button>
+          <button class="btn btn-ghost big" id="goLogin">🔑 لدي حساب بالفعل</button>
+        </div>
+
+        <footer class="splash-footer">
+          <div class="credit">
+            <span>🎨 تصميم وتنفيذ:</span>
+            <strong>الأستاذ حسين سيد</strong>
+          </div>
+          <a class="phone" href="tel:01116544383">📞 01116544383</a>
+        </footer>
+      </div>
+    </section>
+
+    <!-- Register -->
+    <section id="view-register" class="view">
+      <div class="form-card">
+        <button class="back-btn" data-back="splash">→ رجوع</button>
+        <h2 class="form-title">📝 إنشاء حساب جديد</h2>
+        <p class="form-sub">سجّل بياناتك لتبدأ المغامرة</p>
+
+        <form id="registerForm" class="form">
+          <label>
+            <span>الاسم الكامل</span>
+            <input type="text" name="name" required minlength="3" maxlength="60" placeholder="مثال: أحمد محمد علي" />
+          </label>
+          <label>
+            <span>البريد الإلكتروني</span>
+            <input type="email" name="email" required placeholder="example@mail.com" />
+          </label>
+          <label>
+            <span>رقم الهاتف</span>
+            <input type="tel" name="phone" required pattern="^01[0-9]{9}$" placeholder="01XXXXXXXXX" />
+          </label>
+          <label>
+            <span>كلمة المرور</span>
+            <input type="password" name="password" required minlength="6" placeholder="6 أحرف على الأقل" />
+          </label>
+          <label>
+            <span>تأكيد كلمة المرور</span>
+            <input type="password" name="confirm" required minlength="6" />
+          </label>
+          <button class="btn btn-primary" type="submit">🎉 إنشاء الحساب</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Login -->
+    <section id="view-login" class="view">
+      <div class="form-card">
+        <button class="back-btn" data-back="splash">→ رجوع</button>
+        <h2 class="form-title">🔑 تسجيل الدخول</h2>
+        <p class="form-sub">ادخل باسمك أو برقم هاتفك</p>
+
+        <form id="loginForm" class="form">
+          <label>
+            <span>الاسم أو رقم الهاتف</span>
+            <input type="text" name="identifier" required placeholder="اكتب اسمك أو رقم موبايلك" />
+          </label>
+          <label>
+            <span>كلمة المرور</span>
+            <input type="password" name="password" required placeholder="••••••••" />
+          </label>
+          <button class="btn btn-primary" type="submit">🚀 دخول</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Home (logged in) -->
+    <section id="view-home" class="view">
+      <div class="home-head">
+        <div class="welcome-line">
+          <img src="assets/teacher.jpg" alt="teacher" class="mini-avatar" />
+          <div>
+            <small>أهلاً بيك</small>
+            <h2 id="userName">عزيزي الطالب</h2>
+          </div>
+        </div>
+        <button id="logoutBtn" class="icon-btn" title="خروج">🚪</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-icon">⭐</span>
+          <div>
+            <strong id="statScore">0</strong>
+            <small>إجمالي النقاط</small>
+          </div>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">✅</span>
+          <div>
+            <strong id="statDone">0</strong>
+            <small>مراحل مكتملة</small>
+          </div>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">🎯</span>
+          <div>
+            <strong id="statAccuracy">0%</strong>
+            <small>نسبة الإجابات الصحيحة</small>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-title">🗺️ اختر المرحلة</h3>
+      <div id="stagesGrid" class="stages-grid"></div>
+
+      <h3 class="section-title">📜 سجل محاولاتك</h3>
+      <div id="attemptsLog" class="attempts-log">
+        <p class="muted">لم تجرّب أي مرحلة بعد. ابدأ المغامرة الآن!</p>
+      </div>
+    </section>
+
+    <!-- Game -->
+    <section id="view-game" class="view">
+      <div class="game-head">
+        <button class="back-btn" id="exitGame">→ إنهاء المرحلة</button>
+        <div class="stage-pill" id="stagePill">المرحلة 1</div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar"></div>
+        <div class="progress-meta">
+          <span id="qCounter">السؤال 1 / 10</span>
+          <span id="scoreLive">النقاط: 0</span>
+        </div>
+      </div>
+
+      <div class="question-card" id="questionCard">
+        <div class="q-level" id="qLevel">سهل</div>
+        <h3 class="q-text" id="qText">...</h3>
+        <div class="choices" id="choicesList"></div>
+      </div>
+
+      <div class="game-actions">
+        <button id="nextBtn" class="btn btn-primary" disabled>التالي ←</button>
+      </div>
+    </section>
+
+    <!-- Result -->
+    <section id="view-result" class="view">
+      <div class="result-card">
+        <div class="result-emoji" id="resultEmoji">🎉</div>
+        <h2 id="resultTitle">أحسنت!</h2>
+        <div class="score-big" id="resultScore">0 / 10</div>
+        <p id="resultMsg">أداء رائع</p>
+
+        <h3 class="section-title">📋 مراجعة الإجابات</h3>
+        <div id="reviewList" class="review-list"></div>
+
+        <div class="result-actions">
+          <button class="btn btn-ghost" id="backHome">🏠 الرئيسية</button>
+          <button class="btn btn-primary" id="nextStage">المرحلة التالية ←</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Admin Login -->
+    <section id="view-admin-login" class="view">
+      <div class="form-card">
+        <button class="back-btn" data-back="splash">→ رجوع</button>
+        <h2 class="form-title">🛡️ دخول المدير</h2>
+        <p class="form-sub">لوحة تحكم الأستاذ حسين سيد</p>
+        <form id="adminForm" class="form">
+          <label>
+            <span>رقم هاتف المدير</span>
+            <input type="tel" name="phone" required pattern="^01[0-9]{9}$" placeholder="01XXXXXXXXX" />
+          </label>
+          <label>
+            <span>كلمة المرور</span>
+            <input type="password" name="password" required placeholder="••••••••" />
+          </label>
+          <button class="btn btn-primary" type="submit">🔓 دخول لوحة التحكم</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Admin Dashboard -->
+    <section id="view-admin" class="view">
+      <div class="admin-head">
+        <h2>🛡️ لوحة تحكم المدير</h2>
+        <button id="adminLogout" class="icon-btn" title="خروج">🚪</button>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="tab-btn active" data-tab="players">👥 اللاعبون</button>
+        <button class="tab-btn" data-tab="questions">📚 الأسئلة</button>
+        <button class="tab-btn" data-tab="pdf">📄 رفع PDF</button>
+      </div>
+
+      <div class="tab-panels">
+        <div class="tab-panel active" data-tab="players">
+          <div class="search-bar">
+            <input type="search" id="playersSearch" placeholder="🔎 ابحث عن لاعب بالاسم أو الرقم..." />
+            <select id="playersSort">
+              <option value="new">الأحدث</option>
+              <option value="score-desc">الأعلى نقاطًا</option>
+              <option value="score-asc">الأقل نقاطًا</option>
+              <option value="name">الاسم</option>
+            </select>
+          </div>
+          <div id="playersList" class="players-list"></div>
+        </div>
+
+        <div class="tab-panel" data-tab="questions">
+          <div class="q-manage-bar">
+            <select id="qStageFilter">
+              <option value="all">كل المراحل</option>
+            </select>
+            <button class="btn btn-primary" id="addQuestionBtn">➕ إضافة سؤال</button>
+          </div>
+          <div id="questionsList" class="questions-list"></div>
+        </div>
+
+        <div class="tab-panel" data-tab="pdf">
+          <div class="pdf-card">
+            <h3>📤 رفع ملف PDF يحتوي على أسئلة</h3>
+            <p class="muted">سيتم استخراج النصوص من الملف لتُراجعها وتحدد الإجابات الصحيحة يدويًا.</p>
+            <input type="file" id="pdfInput" accept="application/pdf" />
+            <button class="btn btn-primary" id="parsePdfBtn" disabled>🔍 استخراج الأسئلة</button>
+            <div id="pdfPreview" class="pdf-preview"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Question Editor -->
+  <div id="qModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="close-btn" id="closeQModal">✕</button>
+      <h3 id="qModalTitle">تعديل سؤال</h3>
+      <form id="qForm" class="form">
+        <input type="hidden" name="id" />
+        <label>
+          <span>المرحلة</span>
+          <select name="stage" required>
+            <option value="1">1 - سهل</option>
+            <option value="2">2 - سهل+</option>
+            <option value="3">3 - متوسط</option>
+            <option value="4">4 - متوسط+</option>
+            <option value="5">5 - صعب</option>
+          </select>
+        </label>
+        <label>
+          <span>مستوى السؤال</span>
+          <select name="level" required>
+            <option value="easy">سهل</option>
+            <option value="medium">متوسط</option>
+            <option value="hard">صعب</option>
+          </select>
+        </label>
+        <label>
+          <span>نص السؤال</span>
+          <textarea name="text" required rows="3" placeholder="اكتب السؤال هنا..."></textarea>
+        </label>
+        <label>
+          <span>الاختيار الأول</span>
+          <input type="text" name="c0" required />
+        </label>
+        <label>
+          <span>الاختيار الثاني</span>
+          <input type="text" name="c1" required />
+        </label>
+        <label>
+          <span>الاختيار الثالث</span>
+          <input type="text" name="c2" required />
+        </label>
+        <label>
+          <span>الاختيار الرابع</span>
+          <input type="text" name="c3" required />
+        </label>
+        <label class="answer-row">
+          <span>الإجابة الصحيحة</span>
+          <select name="correct" required>
+            <option value="0">الاختيار الأول</option>
+            <option value="1">الاختيار الثاني</option>
+            <option value="2">الاختيار الثالث</option>
+            <option value="3">الاختيار الرابع</option>
+          </select>
+        </label>
+        <label>
+          <span>شرح مختصر (اختياري)</span>
+          <textarea name="explain" rows="2" placeholder="لماذا هذا هو الصحيح؟"></textarea>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="cancelQ">إلغاء</button>
+          <button type="submit" class="btn btn-primary">💾 حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Player Detail -->
+  <div id="playerModal" class="modal hidden">
+    <div class="modal-card wide">
+      <button class="close-btn" id="closePlayerModal">✕</button>
+      <h3 id="playerModalTitle">بيانات اللاعب</h3>
+      <div id="playerModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Footer (visible everywhere) -->
+  <footer class="bottom-footer">
+    <div>🎨 تصميم الأستاذ حسين سيد</div>
+    <a href="tel:01116544383">📞 01116544383</a>
+  </footer>
+
+  <!-- PDF.js for admin PDF upload -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window['pdfjsLib']) {
+      window['pdfjsLib'].GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+  </script>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
