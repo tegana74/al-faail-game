@@ -173,79 +173,106 @@
   }
 
 
-  async function loginUser(email, password) {
-    if (!email || !password) {
-      return {
-        ok: false,
-        error: 'أدخل البريد الإلكتروني وكلمة المرور'
-      };
-    }
-
-    const { data, error } =
-      await window.supabaseClient.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password: password
-      });
-
-    if (error) {
-      console.error('Supabase login error:', error);
-
-      return {
-        ok: false,
-        error: error.message
-      };
-    }
-
-    if (!data.user) {
-      return {
-        ok: false,
-        error: 'تعذر تسجيل الدخول'
-      };
-    }
-
-    const { data: profile, error: profileError } =
-      await window.supabaseClient
-        .from('profiles')
-        .select(
-          'id, full_name, email, phone, grade, role, is_active'
-        )
-        .eq('id', data.user.id)
-        .single();
-
-    if (profileError || !profile) {
-      console.error(
-        'Profile loading error:',
-        profileError
-      );
-
-      return {
-        ok: false,
-        error: 'تم تسجيل الدخول لكن تعذر تحميل بيانات الطالب'
-      };
-    }
-
-    if (!profile.is_active) {
-      await window.supabaseClient.auth.signOut();
-
-      return {
-        ok: false,
-        error: 'هذا الحساب غير مفعل حاليًا'
-      };
-    }
-
+ async function loginUser(identifier, password) {
+  if (!identifier || !password) {
     return {
-      ok: true,
-
-      user: {
-        id: profile.id,
-        name: profile.full_name,
-        email: profile.email,
-        phone: profile.phone,
-        grade: profile.grade,
-        role: profile.role
-      }
+      ok: false,
+      error: 'أدخل الاسم أو رقم الهاتف أو البريد الإلكتروني وكلمة المرور'
     };
   }
+
+  const value = identifier.trim();
+
+  // إذا كان المستخدم كتب بريدًا إلكترونيًا، نستخدمه مباشرة.
+  // وإذا كتب الاسم أو رقم الهاتف، نحصل على البريد المرتبط به من Supabase.
+  let loginEmail = value.toLowerCase();
+
+  if (!/^[^@]+@[^@]+\.[^@]+$/.test(value)) {
+    const { data: email, error: lookupError } =
+      await window.supabaseClient.rpc(
+        'get_login_email',
+        { identifier: value }
+      );
+
+    if (lookupError) {
+      console.error('Login identifier lookup error:', lookupError);
+      return {
+        ok: false,
+        error: 'تعذر البحث عن بيانات الدخول. حاول مرة أخرى.'
+      };
+    }
+
+    if (!email) {
+      return {
+        ok: false,
+        error: 'لا يوجد حساب بهذا الاسم أو رقم الهاتف'
+      };
+    }
+
+    loginEmail = email;
+  }
+
+  const { data, error } =
+    await window.supabaseClient.auth.signInWithPassword({
+      email: loginEmail,
+      password: password
+    });
+
+  if (error) {
+    console.error('Supabase login error:', error);
+
+    return {
+      ok: false,
+      error: 'بيانات الدخول غير صحيحة'
+    };
+  }
+
+  if (!data.user) {
+    return {
+      ok: false,
+      error: 'تعذر تسجيل الدخول'
+    };
+  }
+
+  const { data: profile, error: profileError } =
+    await window.supabaseClient
+      .from('profiles')
+      .select(
+        'id, full_name, email, phone, grade, role, is_active'
+      )
+      .eq('id', data.user.id)
+      .single();
+
+  if (profileError || !profile) {
+    console.error('Profile loading error:', profileError);
+
+    return {
+      ok: false,
+      error: 'تم تسجيل الدخول لكن تعذر تحميل بيانات الطالب'
+    };
+  }
+
+  if (!profile.is_active) {
+    await window.supabaseClient.auth.signOut();
+
+    return {
+      ok: false,
+      error: 'هذا الحساب غير مفعل حاليًا'
+    };
+  }
+
+  return {
+    ok: true,
+    user: {
+      id: profile.id,
+      name: profile.full_name,
+      email: profile.email,
+      phone: profile.phone,
+      grade: profile.grade,
+      role: profile.role
+    }
+  };
+}
 
 
   function setCurrentUser(u) {
