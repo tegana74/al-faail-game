@@ -88,56 +88,228 @@
   /* ============================================
      Users / Auth
      ============================================ */
-  function findUserByNameOrPhone(identifier) {
-    const id = (identifier || '').trim();
-    return users.find(u => u.phone === id || u.name.trim().toLowerCase() === id.toLowerCase());
-  }
-  function registerUser(data) {
-    if (!data.name || !data.email || !data.phone || !data.password)
+  /* ============================================
+   Users / Auth - Supabase
+   ============================================ */
+
+  async function registerUser(data) {
+    if (!data.name || !data.email || !data.phone || !data.password) {
       return { ok: false, error: 'من فضلك أكمل كل البيانات' };
-    if (data.password !== data.confirm)
+    }
+
+    if (data.password !== data.confirm) {
       return { ok: false, error: 'كلمتا المرور غير متطابقتين' };
-    if (!/^01[0-9]{9}$/.test(data.phone))
-      return { ok: false, error: 'رقم الهاتف يجب أن يكون 11 رقمًا ويبدأ بـ 01' };
-    if (!/^[^@]+@[^@]+\.[^@]+$/.test(data.email))
-      return { ok: false, error: 'البريد الإلكتروني غير صحيح' };
-    if (users.some(u => u.phone === data.phone))
-      return { ok: false, error: 'رقم الهاتف مسجّل من قبل' };
-    if (users.some(u => u.email.toLowerCase() === data.email.toLowerCase()))
-      return { ok: false, error: 'البريد الإلكتروني مسجّل من قبل' };
+    }
+
+    if (!/^01[0-9]{9}$/.test(data.phone)) {
+      return {
+        ok: false,
+        error: 'رقم الهاتف يجب أن يكون 11 رقمًا ويبدأ بـ 01'
+      };
+    }
+
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(data.email)) {
+      return {
+        ok: false,
+        error: 'البريد الإلكتروني غير صحيح'
+      };
+    }
+
+    const { data: authData, error } =
+      await window.supabaseClient.auth.signUp({
+        email: data.email.trim().toLowerCase(),
+        password: data.password,
+
+        options: {
+          data: {
+            full_name: data.name.trim(),
+            phone: data.phone.trim(),
+            grade: 'الثالث الثانوي'
+          }
+        }
+      });
+
+    if (error) {
+      console.error('Supabase signup error:', error);
+      return {
+        ok: false,
+        error: error.message
+      };
+    }
+
+    if (!authData.user) {
+      return {
+        ok: false,
+        error: 'تعذر إنشاء الحساب'
+      };
+    }
 
     const user = {
-      id: uid(),
+      id: authData.user.id,
       name: data.name.trim(),
       email: data.email.trim().toLowerCase(),
       phone: data.phone.trim(),
-      password: data.password,
-      joinedAt: Date.now(),
+      grade: 'الثالث الثانوي',
+      role: 'student'
     };
-    users.push(user);
-    save(STORE.USERS, users);
-    return { ok: true, user };
+
+    /*
+     * إذا كان تأكيد البريد الإلكتروني مفعّلًا
+     * فلن توجد جلسة مباشرة بعد التسجيل.
+     */
+    if (!authData.session) {
+      return {
+        ok: true,
+        needsConfirmation: true,
+        user
+      };
+    }
+
+    return {
+      ok: true,
+      needsConfirmation: false,
+      user
+    };
   }
-  function loginUser(identifier, password) {
-    const u = findUserByNameOrPhone(identifier);
-    if (!u) return { ok: false, error: 'لا يوجد حساب بهذه البيانات' };
-    if (u.password !== password) return { ok: false, error: 'كلمة المرور غير صحيحة' };
-    return { ok: true, user: u };
+
+
+  async function loginUser(email, password) {
+    if (!email || !password) {
+      return {
+        ok: false,
+        error: 'أدخل البريد الإلكتروني وكلمة المرور'
+      };
+    }
+
+    const { data, error } =
+      await window.supabaseClient.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password: password
+      });
+
+    if (error) {
+      console.error('Supabase login error:', error);
+
+      return {
+        ok: false,
+        error: error.message
+      };
+    }
+
+    if (!data.user) {
+      return {
+        ok: false,
+        error: 'تعذر تسجيل الدخول'
+      };
+    }
+
+    const { data: profile, error: profileError } =
+      await window.supabaseClient
+        .from('profiles')
+        .select(
+          'id, full_name, email, phone, grade, role, is_active'
+        )
+        .eq('id', data.user.id)
+        .single();
+
+    if (profileError || !profile) {
+      console.error(
+        'Profile loading error:',
+        profileError
+      );
+
+      return {
+        ok: false,
+        error: 'تم تسجيل الدخول لكن تعذر تحميل بيانات الطالب'
+      };
+    }
+
+    if (!profile.is_active) {
+      await window.supabaseClient.auth.signOut();
+
+      return {
+        ok: false,
+        error: 'هذا الحساب غير مفعل حاليًا'
+      };
+    }
+
+    return {
+      ok: true,
+
+      user: {
+        id: profile.id,
+        name: profile.full_name,
+        email: profile.email,
+        phone: profile.phone,
+        grade: profile.grade,
+        role: profile.role
+      }
+    };
   }
+
 
   function setCurrentUser(u) {
-    currentUser = u ? { id: u.id, name: u.name } : null;
-    save(STORE.CURRENT, currentUser);
-  }
-  function getCurrentUser() {
-    if (!currentUser) return null;
-    return users.find(u => u.id === currentUser.id) || null;
-  }
-  function logout() {
-    setCurrentUser(null);
-    view('splash');
+    currentUser = u
+      ? {
+          id: u.id,
+          name: u.name,
+          email: u.email || '',
+          phone: u.phone || '',
+          grade: u.grade || 'الثالث الثانوي',
+          role: u.role || 'student'
+        }
+      : null;
+
+    if (currentUser) {
+      save(STORE.CURRENT, currentUser);
+    } else {
+      localStorage.removeItem(STORE.CURRENT);
+    }
   }
 
+
+  async function getCurrentUser() {
+    const {
+      data: { user },
+      error
+    } = await window.supabaseClient.auth.getUser();
+
+    if (error || !user) {
+      return null;
+    }
+
+    const { data: profile, error: profileError } =
+      await window.supabaseClient
+        .from('profiles')
+        .select(
+          'id, full_name, email, phone, grade, role, is_active'
+        )
+        .eq('id', user.id)
+        .single();
+
+    if (profileError || !profile || !profile.is_active) {
+      return null;
+    }
+
+    return {
+      id: profile.id,
+      name: profile.full_name,
+      email: profile.email,
+      phone: profile.phone,
+      grade: profile.grade,
+      role: profile.role
+    };
+  }
+
+
+  async function logout() {
+    await window.supabaseClient.auth.signOut();
+
+    currentUser = null;
+    localStorage.removeItem(STORE.CURRENT);
+
+    view('splash');
+  }
   /* ============================================
      Game Engine
      ============================================ */
@@ -175,9 +347,13 @@
   }
 
   let gameState = null;
-  function startStage(stageNum) {
-    const user = getCurrentUser();
-    if (!user) { toast('سجّل الدخول أولاً', 'warn'); view('login'); return; }
+  async function startStage(stageNum) {
+  const user = await getCurrentUser();
+  if (!user) {
+    toast('سجّل الدخول أولاً', 'warn');
+    view('login');
+    return;
+  }
     const existing = getStageAttempt(user.id, stageNum);
     if (existing && !existing.open) {
       toast('لقد أكملت هذه المرحلة بالفعل. اطلب من المدير إعادة المحاولة.', 'warn');
@@ -325,9 +501,13 @@
   /* ============================================
      Home / Stats / Stage Cards
      ============================================ */
-  function renderHome() {
-    const user = getCurrentUser();
-    if (!user) { view('splash'); return; }
+  async function renderHome() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    view('splash');
+    return;
+  }
     $('#userName').textContent = user.name;
 
     const myAttempts = attempts.filter(a => a.userId === user.id);
@@ -806,32 +986,91 @@
     // Theme
     $('#themeToggle').addEventListener('click', toggleTheme);
 
-    // Register
-    $('#registerForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const result = registerUser(Object.fromEntries(fd.entries()));
-      if (!result.ok) { toast(result.error, 'error'); return; }
-      setCurrentUser(result.user);
-      toast('مرحبًا ' + result.user.name + '! 🎉');
+   // Register
+$('#registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const fd = new FormData(e.target);
+
+  try {
+    const result = await registerUser(
+      Object.fromEntries(fd.entries())
+    );
+
+    if (!result.ok) {
+      toast(result.error, 'error');
+      return;
+    }
+
+    /*
+     * إذا كان تأكيد البريد الإلكتروني مطلوبًا
+     */
+    if (result.needsConfirmation) {
+      toast(
+        'تم إنشاء الحساب. يرجى تأكيد بريدك الإلكتروني أولًا.',
+        'success'
+      );
+
       e.target.reset();
-      view('home');
-      renderHome();
-    });
+      view('login');
+      return;
+    }
 
-    // Login
-    $('#loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const result = loginUser(fd.get('identifier'), fd.get('password'));
-      if (!result.ok) { toast(result.error, 'error'); return; }
-      setCurrentUser(result.user);
-      toast('أهلًا ' + result.user.name);
-      view('home');
-      renderHome();
-    });
+    setCurrentUser(result.user);
 
-    // Logout
+    toast('مرحبًا ' + result.user.name + '! 🎉');
+
+    e.target.reset();
+
+    view('home');
+    renderHome();
+
+  } catch (error) {
+    console.error('Register error:', error);
+    toast(
+      'حدث خطأ أثناء إنشاء الحساب. حاول مرة أخرى.',
+      'error'
+    );
+  }
+});
+
+
+// Login
+$('#loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const fd = new FormData(e.target);
+
+  try {
+    const result = await loginUser(
+      fd.get('identifier'),
+      fd.get('password')
+    );
+
+    if (!result.ok) {
+      toast(result.error, 'error');
+      return;
+    }
+
+    setCurrentUser(result.user);
+
+    toast('أهلًا ' + result.user.name);
+
+    e.target.reset();
+
+    view('home');
+    renderHome();
+
+  } catch (error) {
+    console.error('Login error:', error);
+    toast(
+      'حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.',
+      'error'
+    );
+  }
+});
+      
+       // Logout
     $('#logoutBtn').addEventListener('click', logout);
 
     // Game
@@ -898,12 +1137,17 @@
     if (isAdminLoggedIn()) {
       // admin can navigate via button
     }
-    if (getCurrentUser()) {
-      view('home');
-      renderHome();
-    } else {
-      view('splash');
-    }
+   getCurrentUser().then(user => {
+  if (user) {
+    view('home');
+    renderHome();
+  } else {
+    view('splash');
+  }
+}).catch(error => {
+  console.error('Initial auth check error:', error);
+  view('splash');
+});
   });
 })();
 
